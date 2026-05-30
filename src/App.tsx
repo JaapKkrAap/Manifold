@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useUI } from '@/stores/ui'
 import { useCharacters } from '@/stores/characters'
+import { useSettings } from '@/stores/settings'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { LibraryView } from '@/components/library/LibraryView'
 import { CharacterEditor } from '@/components/character/CharacterEditor'
@@ -11,9 +12,11 @@ import { SettingsView } from '@/components/layout/SettingsView'
 export default function App() {
   const { view } = useUI()
   const { load } = useCharacters()
+  const { load: loadSettings } = useSettings()
 
   useEffect(() => {
     load()
+    loadSettings()
   }, [])
 
   return (

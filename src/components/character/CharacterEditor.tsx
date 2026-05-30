@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { FieldWithTokens } from './FieldWithTokens'
 import { QualityPanel } from './QualityPanel'
+import { AIAssistButton } from './AIAssistPanel'
 
 export function CharacterEditor() {
   const { getActive, update } = useCharacters()
@@ -41,6 +42,18 @@ export function CharacterEditor() {
   function handleExport() {
     const json = exportCharacter(character!, 'sillytavern_v2')
     downloadJSON(`${draft!.name || 'character'}.json`, json)
+  }
+
+  function ai(field: Parameters<typeof AIAssistButton>[0]['field'], label: string, currentValue: string) {
+    return (
+      <AIAssistButton
+        field={field}
+        fieldLabel={label}
+        data={draft!}
+        current={currentValue}
+        onResult={(text) => patch(field as keyof CharacterData, text as never)}
+      />
+    )
   }
 
   return (
@@ -83,6 +96,7 @@ export function CharacterEditor() {
                   onChange={(v) => patch('description', v)}
                   placeholder="Describe your character's appearance, background, and defining traits…"
                   rows={6}
+                  assist={ai('description', 'Description', draft.description)}
                 />
                 <FieldWithTokens
                   label="Personality"
@@ -90,6 +104,7 @@ export function CharacterEditor() {
                   onChange={(v) => patch('personality', v)}
                   placeholder="Personality traits, speech style, quirks…"
                   rows={4}
+                  assist={ai('personality', 'Personality', draft.personality)}
                 />
                 <FieldWithTokens
                   label="Scenario"
@@ -97,6 +112,7 @@ export function CharacterEditor() {
                   onChange={(v) => patch('scenario', v)}
                   placeholder="The context or setting for interactions…"
                   rows={3}
+                  assist={ai('scenario', 'Scenario', draft.scenario)}
                 />
                 <FieldWithTokens
                   label="First Message"
@@ -104,6 +120,7 @@ export function CharacterEditor() {
                   onChange={(v) => patch('first_mes', v)}
                   placeholder="The character's opening message…"
                   rows={5}
+                  assist={ai('first_mes', 'First Message', draft.first_mes)}
                 />
               </TabsContent>
 
@@ -114,6 +131,7 @@ export function CharacterEditor() {
                   onChange={(v) => patch('mes_example', v)}
                   placeholder={'<START>\n{{user}}: Hello!\n{{char}}: ...'}
                   rows={8}
+                  assist={ai('mes_example', 'Example Messages', draft.mes_example)}
                 />
                 <FieldWithTokens
                   label="System Prompt"
@@ -121,6 +139,7 @@ export function CharacterEditor() {
                   onChange={(v) => patch('system_prompt', v)}
                   placeholder="Custom system prompt override…"
                   rows={4}
+                  assist={ai('system_prompt', 'System Prompt', draft.system_prompt)}
                 />
                 <FieldWithTokens
                   label="Post-History Instructions"
@@ -128,20 +147,18 @@ export function CharacterEditor() {
                   onChange={(v) => patch('post_history_instructions', v)}
                   placeholder="Instructions injected after the chat history…"
                   rows={3}
+                  assist={ai('post_history_instructions', 'Post-History Instructions', draft.post_history_instructions)}
                 />
               </TabsContent>
 
               <TabsContent value="meta" className="flex flex-col gap-5">
-                <div className="flex flex-col gap-1.5">
-                  <Label>Creator Notes</Label>
-                  <FieldWithTokens
-                    label=""
-                    value={draft.creator_notes}
-                    onChange={(v) => patch('creator_notes', v)}
-                    placeholder="Notes for users of this character card…"
-                    rows={4}
-                  />
-                </div>
+                <FieldWithTokens
+                  label="Creator Notes"
+                  value={draft.creator_notes}
+                  onChange={(v) => patch('creator_notes', v)}
+                  placeholder="Notes for users of this character card…"
+                  rows={4}
+                />
                 <div className="flex gap-4">
                   <div className="flex flex-col gap-1.5 flex-1">
                     <Label>Creator</Label>
@@ -161,7 +178,10 @@ export function CharacterEditor() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label>Tags (comma-separated)</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Tags (comma-separated)</Label>
+                    {ai('tags', 'Tags', draft.tags.join(', '))}
+                  </div>
                   <Input
                     value={draft.tags.join(', ')}
                     onChange={(e) =>
